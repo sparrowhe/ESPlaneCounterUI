@@ -1,0 +1,25 @@
+{
+  "name": "plane-counter",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": "Dezheng He",
+  "description": "Euroscope assumed plane counter tool",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.4",
+    "@electron-forge/maker-deb": "^6.0.4",
+    "@electron-forge/maker-rpm": "^6.0.4",
+    "@electron-forge/maker-squirrel": "^6.0.4",
+    "@electron-forge/maker-zip": "^6.0.4",
+    "electron": "^22.0.0"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>管制小工具</title>
+    <style>
+        .main {
+            padding: 40px 15px;
+            text-align: center;
+        }
+        .count {
+            color: red;
+            font-size: 120%;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="main">
+          <h1>你本次上班共管制<span class="count" id="count">0</span>架机组</h1>
+          <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">提示</h4>
+                    </div>
+                    <div class="modal-body">下班后记录会被删除哦</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="offline2()">好好好</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+          <button class="btn btn-default" type="submit" onclick="offline()">下班</button>
+          <button class="btn btn-default" type="submit" onclick="exportCsv()">导出</button>
+          <br>
+          <table class="table">
+            <thead>
+                <tr>
+                    <th>呼号</th>
+                    <th>起飞</th>
+                    <th>落地</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+</body>
+
+<script>
+    function intervalFunc() {
+        $.ajax('http://localhost:9901/req', {
+            method: 'GET'
+        }).then((data) => {
+            let html = '';
+            for (let i in data) {
+                if (data[i].dep == undefined || data[i].arr == undefined || data[i].callsign == '') {
+                    continue;
+                }
+                html += `<tr><td>${data[i].callsign}</td><td>${data[i].dep}</td><td>${data[i].arr}</td></tr>`
+            }
+            $('#table-body').html(html);
+            $('#count').html(data.length);
+        });
+    }
+    function offline() {
+        $('#myModal').modal('show');
+    }
+    function offline2() {
+        $.ajax('http://localhost:9901/del', {
+            method: 'GET'
+        }).then((data) => {
+            $('#table-body').html('');
+            $('#count').html('0');
+            $('#myModal').modal('hide');
+        });
+    }
+    function exportCsv() {
+        // 将列表导出为csv文件
+        $.ajax('http://localhost:9901/req', {
+            method: 'GET'
+        }).then((data) => {
+            let csv = 'callsign,depeature,arrival\n';
+            for (let i in data) {
+                if (data[i].dep == undefined || data[i].arr == undefined || data[i].callsign == '') {
+                    continue;
+                }
+                csv += `${data[i].callsign},${data[i].dep},${data[i].arr}\n`
+            }
+            CsvString = 'data:application/vnd.ms-excel;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+            const link = document.createElement('a');
+            link.href = CsvString;
+            link.download = `管制记录.csv`;
+            link.click();
+            link.remove();
+        });
+    }
+    function onload() {
+        setInterval(intervalFunc, 1000);
+    }
+    onload();
+</script>
+
+
+</html>
